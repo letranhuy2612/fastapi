@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 import uuid
 from pydantic import BaseModel, EmailStr, constr
 
@@ -31,7 +32,11 @@ class UserResponse(UserBaseSchema):
 
 
 class MetaData(BaseModel):
-    box: str
-    label: str
-    accuracy: float
-    file_id :int
+    name: str
+    description: Optional[str] 
+
+
+class UploadFileResponse(BaseModel):
+    bucket_name: str
+    file_name: str
+    url: str

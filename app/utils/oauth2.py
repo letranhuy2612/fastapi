@@ -4,10 +4,12 @@ from fastapi import Depends, HTTPException, status
 from fastapi_jwt_auth import AuthJWT
 from pydantic import BaseModel
 
-from . import models
-from .database import get_db
+from app.models.models import User
+
+
+from ..database import get_db
 from sqlalchemy.orm import Session
-from .config import settings
+from ..config import settings
 
 
 class Settings(BaseModel):
@@ -40,7 +42,7 @@ def require_user(db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
     try:
         Authorize.jwt_required()
         user_id = Authorize.get_jwt_subject()
-        user = db.query(models.User).filter(models.User.id == user_id).first()
+        user = db.query(User).filter(User.id == user_id).first()
 
         if not user:
             raise UserNotFound('User no longer exist')

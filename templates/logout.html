@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Logout API</title>
+    <script>
+        function logout() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/api/auth/logout", true);  // Sử dụng đường dẫn "/api/auth/logout"
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+                        // Xử lý phản hồi từ máy chủ
+                        console.log(response);
+                        // Chuyển hướng đến trang đăng nhập
+                        window.location.href = "/api/auth/login";
+                    } else {
+                        // Xử lý lỗi
+                        console.log("Failed " + xhr.status + ": " + xhr.statusText);
+                    }
+                }
+            };
+            xhr.send();
+        }
+    </script>
+</head>
+<body>
+    <button type="button" onclick="logout()">Logout</button>
+</body>
+</html>

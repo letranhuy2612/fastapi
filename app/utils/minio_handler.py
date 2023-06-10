@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from minio import Minio
 
+
 class MinioHandler():
     __instance = None
 
@@ -15,8 +16,8 @@ class MinioHandler():
 
     def __init__(self):
         self.minio_url = 'localhost:9000'
-        self.access_key = 'xkoqxEVwrDX4DKlR6NjU'
-        self.secret_key = 'KkaQaFjS1R01h1Rj4z9nEIQueF5bbr1Vqy93AkjW'
+        self.access_key = 'whJ9nFH2pMX3HKmlRE2F'
+        self.secret_key = 'Zm4B4Mx7kO0LQYLV2AM4F0vRJvJJaVzMbG0P7qzg'
         self.bucket_name = 'fastapi-minio'
         self.client = Minio(
             self.minio_url,
@@ -45,7 +46,6 @@ class MinioHandler():
             self.client.stat_object(bucket_name=bucket_name, object_name=file_name)
             return True
         except Exception as e:
-            print(f'Exception: {e}')
             return False
 
     def put_object(self, file_data, file_name, content_type):
@@ -74,3 +74,9 @@ class MinioHandler():
         except Exception as e:
             raise Exception(e)
 
+    def delete_file(self, bucket_name, file_name):
+        try :
+            self.client.remove_object(bucket_name,file_name)
+            return True
+        except Exception as e:
+            return False

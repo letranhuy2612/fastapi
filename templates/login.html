@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login User API</title>
+    <script>
+        function loginUser() {
+            var email = document.getElementById("email").value;
+            var password = document.getElementById("password").value;
+
+            var payload = {
+                "email": email,
+                "password": password,
+            };
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/auth/login", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 201) {
+                        var response = JSON.parse(xhr.responseText);
+                        // Xử lý phản hồi từ máy chủ
+                        console.log(response);
+                    } else {
+                        // Xử lý lỗi
+                        console.log("Failed " + xhr.status + ": " + xhr.statusText);
+                    }
+                }
+            };
+            xhr.send(JSON.stringify(payload));
+        }
+    </script>
+</head>
+<body>
+
+    <label for="email">Email:</label>
+    <input type="email" name="email" id="email" required><br>
+
+    <label for="password">Password:</label>
+    <input type="password" name="password" id="password" required><br>
+
+
+    <button type="button" onclick="loginUser()">Login</button>
+</body>
+</html>

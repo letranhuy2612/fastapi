@@ -1,29 +1,32 @@
 from datetime import timedelta
-import json
-import os
-import uuid
-from fastapi import APIRouter, Request, Response, status, Depends, HTTPException, File, UploadFile, Form
+from fastapi import APIRouter, Request, Response, status, Depends, HTTPException
 from pydantic import EmailStr
-from fastapi.responses import FileResponse
-import os
-from app import oauth2
-from .. import schemas, models, utils
+from app.utils import oauth2
+from app.models.models import User
+from ..utils import utils
+from .. import schemas
 from sqlalchemy.orm import Session
 from ..database import get_db
-from app.oauth2 import AuthJWT
+from app.utils.oauth2 import AuthJWT
 from ..config import settings
+from fastapi.templating import Jinja2Templates
+templates = Jinja2Templates(directory="templates/")
 
 
 router = APIRouter()
 ACCESS_TOKEN_EXPIRES_IN = settings.ACCESS_TOKEN_EXPIRES_IN
 REFRESH_TOKEN_EXPIRES_IN = settings.REFRESH_TOKEN_EXPIRES_IN
 
+@router.get("/register-page")
+def registerpage(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
 
 @router.post('/register', status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
 async def create_user(payload: schemas.CreateUserSchema, db: Session = Depends(get_db)):
     # Check if user already exist
-    user = db.query(models.User).filter(
-        models.User.email == EmailStr(payload.email.lower())).first()
+    user = db.query(User).filter(
+        User.email == EmailStr(payload.email.lower())).first()
     if user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail='Account already exist')
@@ -37,18 +40,21 @@ async def create_user(payload: schemas.CreateUserSchema, db: Session = Depends(g
     payload.role = 'user'
     payload.verified = True
     payload.email = EmailStr(payload.email.lower())
-    new_user = models.User(**payload.dict())
+    new_user = User(**payload.dict())
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
     return new_user
 
+@router.get("/login-page")
+def loginpage(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
 
 @router.post('/login')
 def login(payload: schemas.LoginUserSchema, response: Response, db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
     # Check if the user exist
-    user = db.query(models.User).filter(
-        models.User.email == EmailStr(payload.email.lower())).first()
+    user = db.query(User).filter(
+        User.email == EmailStr(payload.email.lower())).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail='Incorrect Email or Password')
@@ -93,7 +99,7 @@ def refresh_token(response: Response, request: Request, Authorize: AuthJWT = Dep
         if not user_id:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail='Could not refresh access token')
-        user = db.query(models.User).filter(models.User.id == user_id).first()
+        user = db.query(User).filter(User.id == user_id).first()
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail='The user belonging to this token no logger exist')
@@ -115,38 +121,8 @@ def refresh_token(response: Response, request: Request, Authorize: AuthJWT = Dep
 
 
 @router.get('/logout', status_code=status.HTTP_200_OK)
-def logout(response: Response, Authorize: AuthJWT = Depends(), user_id: str = Depends(oauth2.require_user)):
+def logout(request: Request,response: Response, Authorize: AuthJWT = Depends(), user_id: str = Depends(oauth2.require_user)):
     Authorize.unset_jwt_cookies()
     response.set_cookie('logged_in', '', -1)
 
-    return {'status': 'success'}
-list_img=[]
-@router.post("/upload")
-async def upload(request: Request, db: Session = Depends(get_db), user_id: str = Depends(oauth2.require_user)):
-    ALLOWED_CONTENT_TYPES = set(['png', 'jpg', 'jpeg'])
-    body = await request.form()
-
-    original_name = f"{uuid.uuid4()}.jpg"
-    content_type = body["file"].content_type
-    metadata = body["metadata"]
-    print(json.loads(metadata))
-    metadata = json.loads(metadata)
-    metadata.update({'user_id':user_id})
-    contents= await body["file"].read()
-    list_img.append(original_name)
-    with open(os.path.join("data","upload", original_name), "wb") as f:
-        f.write(contents)
-    if content_type not in ALLOWED_CONTENT_TYPES:
-        raise HTTPException(
-            status_code=415,
-            detail="The file type is not allowed.",
-        )
-
-
-    return {"JSON Payload ": metadata, "Uploaded Filename": original_name}
-
-@router.get("/upload/{file_id}")
-async def get_file(file_id :str):
-    path = os.path.join("data","upload", list_img[file_id])
-    print(path)
-    return FileResponse(path)
+    return templates.TemplateResponse("logout.html", {"request": request})

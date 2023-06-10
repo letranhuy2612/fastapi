@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register User API</title>
+    <script>
+        function registerUser() {
+            var name = document.getElementById("name").value;
+            var email = document.getElementById("email").value;
+            var password = document.getElementById("password").value;
+            var passwordConfirm = document.getElementById("passwordConfirm").value;
+
+            var payload = {
+                "name": name,
+                "email": email,
+                "password": password,
+                "passwordConfirm": passwordConfirm
+            };
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/auth/register", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 201) {
+                        var response = JSON.parse(xhr.responseText);
+                        // Xử lý phản hồi từ máy chủ
+                        console.log(response);
+                    } else {
+                        // Xử lý lỗi
+                        console.log("Failed " + xhr.status + ": " + xhr.statusText);
+                    }
+                }
+            };
+            xhr.send(JSON.stringify(payload));
+        }
+    </script>
+</head>
+<body>
+    <label for="name">Name:</label>
+    <input type="text" name="name" id="name" required><br>
+
+    <label for="email">Email:</label>
+    <input type="email" name="email" id="email" required><br>
+
+    <label for="password">Password:</label>
+    <input type="password" name="password" id="password" required><br>
+
+    <label for="passwordConfirm">Confirm Password:</label>
+    <input type="password" name="passwordConfirm" id="passwordConfirm" required><br>
+
+    <button type="button" onclick="registerUser()">Register</button>
+</body>
+</html>

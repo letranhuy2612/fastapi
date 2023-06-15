@@ -45,7 +45,9 @@ alembic init alembic
 ```
 Sau lệnh này sẽ tạo ra folder chứa:
     versions/ - thư mục này chứa các tập lệnh phiên bản
+    
     env.py – Nó chứa các hướng dẫn về cách định cấu hình và tạo công cụ SQLAlchemy.
+    
     script.py.mako – a Mako template file that is used to generate new migration scripts within the versions folder.
  create a revision file with this command:
  

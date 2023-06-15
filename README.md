@@ -60,7 +60,7 @@ Sau đó ta truy cập vào pgadmin sẽ thấy các table sẽ được tạo
 ### Run app
 
 ```
-python runserve.py
+python runserver.py
 ```
 
 
